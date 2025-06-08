@@ -1,6 +1,10 @@
 #include <math.h>
 #include <stdio.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 /* Convert degrees to radians */
 static double rad(double d){ return d * M_PI / 180.0; }
 /* Convert radians to degrees */
@@ -79,11 +83,28 @@ void inverse_orthographic_projection(double clon, double clat, double x, double 
 
 #ifdef TEST
 int main(){
-    double x,y,lon,lat;
-    gnomonic_projection(0,90,120,45,&x,&y);
-    printf("gno %f %f\n",x,y);
-    inverse_gnomonic_projection(0,90,x,y,&lon,&lat);
-    printf("back %f %f\n",lon,lat);
+    /* Example coordinates */
+    double lon = 120.0, lat = 45.0;
+    double x, y, lon2, lat2;
+
+    /* Gnomonic */
+    gnomonic_projection(0, 90, lon, lat, &x, &y);
+    printf("Gnomonic: %f %f\n", x, y);
+    inverse_gnomonic_projection(0, 90, x, y, &lon2, &lat2);
+    printf("Recovered: %f %f\n", lon2, lat2);
+
+    /* Azimuthal equidistant */
+    azimuthal_equidistant_projection(0, 90, lon, lat, &x, &y);
+    printf("Azimuthal Equidistant: %f %f\n", x, y);
+    inverse_azimuthal_equidistant_projection(0, 90, x, y, &lon2, &lat2);
+    printf("Recovered: %f %f\n", lon2, lat2);
+
+    /* Orthographic */
+    orthographic_projection(0, 90, lon, lat, &x, &y);
+    printf("Orthographic: %f %f\n", x, y);
+    inverse_orthographic_projection(0, 90, x, y, &lon2, &lat2);
+    printf("Recovered: %f %f\n", lon2, lat2);
+
     return 0;
 }
 #endif

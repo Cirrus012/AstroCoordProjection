@@ -111,10 +111,24 @@ end module projections
 #ifdef TEST
 program test
   use projections
-  real*8 x,y,lon,lat
-  call gnomonic_projection(0.d0,90.d0,120.d0,45.d0,x,y)
-  print *, 'gno', x, y
+  real*8 x, y, lon, lat
+
+  lon = 120.d0
+  lat = 45.d0
+
+  call gnomonic_projection(0.d0,90.d0,lon,lat,x,y)
+  print *, 'Gnomonic:', x, y
   call inverse_gnomonic_projection(0.d0,90.d0,x,y,lon,lat)
-  print *, 'back', lon, lat
+  print *, 'Recovered:', lon, lat
+
+  call azimuthal_equidistant_projection(0.d0,90.d0,lon,lat,x,y)
+  print *, 'Azimuthal Equidistant:', x, y
+  call inverse_azimuthal_equidistant_projection(0.d0,90.d0,x,y,lon,lat)
+  print *, 'Recovered:', lon, lat
+
+  call orthographic_projection(0.d0,90.d0,lon,lat,x,y)
+  print *, 'Orthographic:', x, y
+  call inverse_orthographic_projection(0.d0,90.d0,x,y,lon,lat)
+  print *, 'Recovered:', lon, lat
 end program test
 #endif

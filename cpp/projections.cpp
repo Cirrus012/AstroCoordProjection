@@ -81,9 +81,23 @@ Spherical inverse_orthographic_projection(double clon, double clat, double x, do
 
 #ifdef TEST
 int main(){
-    Point p = gnomonic_projection(0,90,120,45);
-    std::cout << "gno "<<p.x<<" "<<p.y<<"\n";
-    Spherical s = inverse_gnomonic_projection(0,90,p.x,p.y);
-    std::cout << "back "<<s.lon<<" "<<s.lat<<"\n";
+    double lon = 120.0, lat = 45.0;
+
+    Point p; Spherical s;
+
+    p = gnomonic_projection(0,90,lon,lat);
+    std::cout << "Gnomonic: "<<p.x<<" "<<p.y<<"\n";
+    s = inverse_gnomonic_projection(0,90,p.x,p.y);
+    std::cout << "Recovered: "<<s.lon<<" "<<s.lat<<"\n";
+
+    p = azimuthal_equidistant_projection(0,90,lon,lat);
+    std::cout << "Azimuthal Equidistant: "<<p.x<<" "<<p.y<<"\n";
+    s = inverse_azimuthal_equidistant_projection(0,90,p.x,p.y);
+    std::cout << "Recovered: "<<s.lon<<" "<<s.lat<<"\n";
+
+    p = orthographic_projection(0,90,lon,lat);
+    std::cout << "Orthographic: "<<p.x<<" "<<p.y<<"\n";
+    s = inverse_orthographic_projection(0,90,p.x,p.y);
+    std::cout << "Recovered: "<<s.lon<<" "<<s.lat<<"\n";
 }
 #endif

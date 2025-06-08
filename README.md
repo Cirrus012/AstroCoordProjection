@@ -32,3 +32,16 @@ exercises the inverse transforms.
 ### C/C++/Fortran
 
 Simple implementations of the same algorithms are provided in `c/`, `cpp/` and `fortran/` directories for reference.
+To run the small self test embedded in each file, compile with the `TEST` macro
+enabled. Example commands:
+
+```bash
+# C
+gcc -std=c99 -DTEST c/projections.c -lm -o c/test && ./c/test
+
+# C++
+g++ -std=c++17 -DTEST cpp/projections.cpp -o cpp/test && ./cpp/test
+
+# Fortran
+gfortran -DTEST fortran/projections.f90 -o fortran/test && ./fortran/test
+```
