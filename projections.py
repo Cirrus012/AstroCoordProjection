@@ -1,129 +1,140 @@
-"""projections.py
-Combined implementations of gnomonic, azimuthal equidistant and
-orthographic projections with their inverse transforms.
-All angles are expected in degrees.
-"""
-
 import numpy as np
 
-# ----------------------------------------------------------------------
-# Gnomonic projection
-# ----------------------------------------------------------------------
+# ---------------------------------------------------
+# Gnomonic projection (eq.6-9)
+# ---------------------------------------------------
 
-def gnomonic_projection(center_lon, center_lat, lon, lat):
-    """Project lon/lat to tangent plane using gnomonic projection.
-
-    Parameters
-    ----------
-    center_lon, center_lat : float
-        Longitude and latitude of the projection center in degrees.
-    lon, lat : array_like
-        Coordinates of points to project in degrees.
-
-    Returns
-    -------
-    x, y : ndarray
-        Coordinates on the tangent plane.
+def gnomonic_projection(A, D, α, δ):
     """
-    lon = np.asarray(lon, dtype=float)
-    lat = np.asarray(lat, dtype=float)
+    Gnomonic projection, Dick 1991 eq.6-7
+    """
+    α = np.asarray(α, dtype=float)
+    δ = np.asarray(δ, dtype=float)
+    Δα = np.radians((α - A + 180) % 360 - 180)  # Δα
+    D_rad = np.radians(D)
+    δ_rad = np.radians(δ)
 
-    dlon = np.radians((lon - center_lon + 180) % 360 - 180)
-    sin_lat0 = np.sin(np.radians(center_lat))
-    cos_lat0 = np.cos(np.radians(center_lat))
-    sin_lat = np.sin(np.radians(lat))
-    cos_lat = np.cos(np.radians(lat))
+    sinD = np.sin(D_rad)
+    cosD = np.cos(D_rad)
+    sinδ = np.sin(δ_rad)
+    cosδ = np.cos(δ_rad)
 
-    denom = sin_lat * sin_lat0 + cos_lat * cos_lat0 * np.cos(dlon)
-    x = cos_lat * np.sin(dlon) / denom
-    y = (sin_lat * cos_lat0 - cos_lat * sin_lat0 * np.cos(dlon)) / denom
-    return x, y
+    cosθ = sinδ * sinD + cosδ * cosD * np.cos(Δα)  # eq.1
+    ξ_G = cosδ * np.sin(Δα) / cosθ                # eq.6
+    η_G = (sinδ * cosD - cosδ * sinD * np.cos(Δα)) / cosθ  # eq.7
+    return ξ_G, η_G
 
+def inverse_gnomonic_projection(A, D, ξ_G, η_G):
+    """
+    Inverse gnomonic projection, Dick 1991 eq.8-9
+    """
+    ξ_G = np.asarray(ξ_G, dtype=float)
+    η_G = np.asarray(η_G, dtype=float)
+    D_rad = np.radians(D)
+    sinD = np.sin(D_rad)
+    cosD = np.cos(D_rad)
 
-def inverse_gnomonic_projection(center_lon, center_lat, x, y):
-    """Recover lon/lat from gnomonic projection coordinates."""
-    x = np.asarray(x, dtype=float)
-    y = np.asarray(y, dtype=float)
+    Δα = np.arctan2(ξ_G, cosD - η_G * sinD)             # eq.8
+    α = (np.degrees(Δα) + A + 360) % 360
 
-    lat0_rad = np.radians(center_lat)
-    sin_lat0 = np.sin(lat0_rad)
-    cos_lat0 = np.cos(lat0_rad)
+    numerator = η_G * cosD + sinD
+    denominator = np.sqrt(ξ_G ** 2 + (cosD - η_G * sinD) ** 2)
+    δ = np.degrees(np.arctan(numerator / denominator))   # eq.9
+    return α, δ
 
-    denom = cos_lat0 - y * sin_lat0
-    lam = np.arctan2(x, denom)
-    lon = (np.degrees(lam) + center_lon + 360) % 360
-    numerator = (y * cos_lat0 + sin_lat0) * np.cos(lam)
-    lat = np.degrees(np.arctan(numerator / denom))
-    return lon, lat
+# ---------------------------------------------------
+# Azimuthal equidistant projection (eq.11-15)
+# ---------------------------------------------------
 
-# ----------------------------------------------------------------------
-# Azimuthal equidistant projection
-# ----------------------------------------------------------------------
+def azimuthal_equidistant_projection(A, D, α, δ):
+    """
+    Azimuthal equidistant projection, Dick 1991 eq.11-12
+    """
+    α = np.asarray(α, dtype=float)
+    δ = np.asarray(δ, dtype=float)
+    Δα = np.radians((α - A + 180) % 360 - 180)
+    D_rad = np.radians(D)
+    δ_rad = np.radians(δ)
 
-def azimuthal_equidistant_projection(center_lon, center_lat, lon, lat):
-    """Azimuthal equidistant projection."""
-    lon = np.asarray(lon, dtype=float)
-    lat = np.asarray(lat, dtype=float)
-    dlon = np.radians((lon - center_lon + 180) % 360 - 180)
-    sin_lat0 = np.sin(np.radians(center_lat))
-    cos_lat0 = np.cos(np.radians(center_lat))
-    sin_lat = np.sin(np.radians(lat))
-    cos_lat = np.cos(np.radians(lat))
-    cos_c = sin_lat0 * sin_lat + cos_lat0 * cos_lat * np.cos(dlon)
-    cos_c = np.clip(cos_c, -1.0, 1.0)
-    c = np.arccos(cos_c)
-    k = np.where(c != 0, c / np.sin(c), 1.0)
-    x = k * cos_lat * np.sin(dlon)
-    y = k * (cos_lat0 * sin_lat - sin_lat0 * cos_lat * np.cos(dlon))
-    return x, y
+    sinD = np.sin(D_rad)
+    cosD = np.cos(D_rad)
+    sinδ = np.sin(δ_rad)
+    cosδ = np.cos(δ_rad)
 
+    cosθ = sinδ * sinD + cosδ * cosD * np.cos(Δα)   # eq.1
+    θ = np.arccos(np.clip(cosθ, -1.0, 1.0))
+    sinθ = np.sin(θ)
 
-def inverse_azimuthal_equidistant_projection(center_lon, center_lat, x, y):
-    """Inverse azimuthal equidistant projection."""
-    x = np.asarray(x, dtype=float)
-    y = np.asarray(y, dtype=float)
-    rho = np.hypot(x, y)
-    c = rho
-    sin_c = np.sin(c)
-    cos_c = np.cos(c)
-    sin_lat0 = np.sin(np.radians(center_lat))
-    cos_lat0 = np.cos(np.radians(center_lat))
-    lat = np.arcsin(cos_c * sin_lat0 + (y * sin_c * cos_lat0) / np.where(rho != 0, rho, 1))
-    lon = np.radians(center_lon) + np.arctan2(x * sin_c, rho * cos_lat0 * cos_c - y * sin_lat0 * sin_c)
-    return (np.degrees(lon) + 360) % 360, np.degrees(lat)
+    ξ_E = cosδ * np.sin(Δα) / np.where(sinθ != 0, sinθ, 1)                    # eq.11
+    η_E = (sinδ * cosD - cosδ * sinD * np.cos(Δα)) / np.where(sinθ != 0, sinθ, 1) # eq.12
+    return ξ_E, η_E
 
-# ----------------------------------------------------------------------
-# Orthographic projection
-# ----------------------------------------------------------------------
+def inverse_azimuthal_equidistant_projection(A, D, ξ_E, η_E):
+    """
+    Inverse azimuthal equidistant projection, Dick 1991 eq.13-15
+    """
+    ξ_E = np.asarray(ξ_E, dtype=float)
+    η_E = np.asarray(η_E, dtype=float)
+    ρ = np.hypot(ξ_E, η_E)
+    θ = ρ
+    sinθ = np.sin(θ)
+    cosθ = np.cos(θ)
 
-def orthographic_projection(center_lon, center_lat, lon, lat):
-    """Orthographic projection."""
-    lon = np.asarray(lon, dtype=float)
-    lat = np.asarray(lat, dtype=float)
-    dlon = np.radians((lon - center_lon + 180) % 360 - 180)
-    sin_lat0 = np.sin(np.radians(center_lat))
-    cos_lat0 = np.cos(np.radians(center_lat))
-    sin_lat = np.sin(np.radians(lat))
-    cos_lat = np.cos(np.radians(lat))
-    x = cos_lat * np.sin(dlon)
-    y = cos_lat0 * sin_lat - sin_lat0 * cos_lat * np.cos(dlon)
-    return x, y
+    D_rad = np.radians(D)
+    sinD = np.sin(D_rad)
+    cosD = np.cos(D_rad)
 
+    sinδ = cosθ * sinD + η_E * sinθ * cosD / np.where(ρ != 0, ρ, 1)  # eq.14
+    δ = np.degrees(np.arcsin(np.clip(sinδ, -1.0, 1.0)))
 
-def inverse_orthographic_projection(center_lon, center_lat, x, y):
-    """Inverse orthographic projection."""
-    x = np.asarray(x, dtype=float)
-    y = np.asarray(y, dtype=float)
-    rho = np.hypot(x, y)
-    if np.any(rho > 1):
-        # Points outside the visible hemisphere cannot be projected back
-        return np.full_like(x, np.nan), np.full_like(y, np.nan)
-    c = np.arcsin(np.clip(rho, -1.0, 1.0))
-    sin_c = np.sin(c)
-    cos_c = np.cos(c)
-    sin_lat0 = np.sin(np.radians(center_lat))
-    cos_lat0 = np.cos(np.radians(center_lat))
-    lat = np.arcsin(cos_c * sin_lat0 + (y * sin_c * cos_lat0) / np.where(rho != 0, rho, 1))
-    lon = np.radians(center_lon) + np.arctan2(x * sin_c, rho * cos_lat0 * cos_c - y * sin_lat0 * sin_c)
-    return (np.degrees(lon) + 360) % 360, np.degrees(lat)
+    numerator = ξ_E * sinθ
+    denominator = ρ * cosD * cosθ - η_E * sinD * sinθ
+    Δα = np.arctan2(numerator, denominator)                          # eq.15
+    α = (np.degrees(Δα) + A + 360) % 360
+    return α, δ
 
+# ---------------------------------------------------
+# Orthographic projection (eq.19-23)
+# ---------------------------------------------------
+
+def orthographic_projection(A, D, α, δ):
+    """
+    Orthographic projection, Dick 1991 eq.19-20
+    """
+    α = np.asarray(α, dtype=float)
+    δ = np.asarray(δ, dtype=float)
+    Δα = np.radians((α - A + 180) % 360 - 180)
+    D_rad = np.radians(D)
+    δ_rad = np.radians(δ)
+
+    sinD = np.sin(D_rad)
+    cosD = np.cos(D_rad)
+    sinδ = np.sin(δ_rad)
+    cosδ = np.cos(δ_rad)
+
+    ξ_O = cosδ * np.sin(Δα)                        # eq.19
+    η_O = sinδ * cosD - cosδ * sinD * np.cos(Δα)   # eq.20
+    return ξ_O, η_O
+
+def inverse_orthographic_projection(A, D, ξ_O, η_O):
+    """
+    Inverse orthographic projection, Dick 1991 eq.21-23
+    """
+    ξ_O = np.asarray(ξ_O, dtype=float)
+    η_O = np.asarray(η_O, dtype=float)
+    D_rad = np.radians(D)
+    sinD = np.sin(D_rad)
+    cosD = np.cos(D_rad)
+
+    sinθ2 = ξ_O**2 + η_O**2
+    θ = np.arcsin(np.clip(np.sqrt(sinθ2), -1.0, 1.0))
+    sinθ = np.sin(θ)
+    cosθ = np.cos(θ)
+
+    sinδ = η_O * cosD + cosθ * sinD                # eq.22
+    δ = np.degrees(np.arcsin(np.clip(sinδ, -1.0, 1.0)))
+
+    cosδ = np.cos(np.radians(δ))
+    Δα = np.arcsin(np.clip(ξ_O / np.where(cosδ != 0, cosδ, 1), -1.0, 1.0))  # eq.23
+    α = (np.degrees(Δα) + A + 360) % 360
+    return α, δ

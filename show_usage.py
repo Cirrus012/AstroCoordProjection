@@ -12,7 +12,7 @@ from projections import (
 
 def main():
     # Projection center at the north pole
-    center_lon, center_lat = 0.0, 90.0
+    center_lon, center_lat = 0.0, 20
 
     # Example spherical coordinates to project
     lon = [120.0, 40.0]

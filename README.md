@@ -26,7 +26,7 @@ lon, lat = [120.0], [45.0]
 xi, eta = gnomonic_projection(center_lon, center_lat, lon, lat)
 ```
 
-See `example_usage.py` for a complete demonstration that also
+See `show_usage.py` for a complete demonstration that also
 exercises the inverse transforms.
 
 ### C/C++/Fortran
