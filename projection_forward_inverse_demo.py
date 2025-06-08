@@ -15,11 +15,11 @@ def print_result(name, lon, lat, x, y, lon2, lat2):
     print()
 
 def main():
-    center_lon, center_lat = 0.0, 90.0   # 投影中心 (A, D)
+    center_lon, center_lat = 0.0, 20.0   # 投影中心 (A, D)
 
     # 方式一：输入绝对经纬度
-    lon_abs = [10.0, 40.0]
-    lat_abs = [45.0, -20.0]
+    lon_abs = [0.0, 180.0]
+    lat_abs = [10.0, -20.0]
 
     # 方式二：输入相对坐标（即与(A, D)点的平面坐标，例如用gnomonic_projection等算出来的ξ、η等）
     # 你可以先用一组绝对经纬度反投影到平面坐标（模拟“测量”），再用这些平面坐标测试逆变换
