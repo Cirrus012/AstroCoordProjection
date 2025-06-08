@@ -6,8 +6,16 @@ static double rad(double d){ return d * M_PI / 180.0; }
 /* Convert radians to degrees */
 static double deg(double r){ return r * 180.0 / M_PI; }
 
+/* Difference of longitudes in radians normalized to [-pi, pi] */
+static double dlon_rad(double lon, double clon){
+    double d = fmod(lon - clon + 180.0, 360.0);
+    if(d < 0) d += 360.0;
+    d -= 180.0;
+    return rad(d);
+}
+
 void gnomonic_projection(double clon, double clat, double lon, double lat, double *x, double *y){
-    double dlon = rad(lon - clon);
+    double dlon = dlon_rad(lon, clon);
     double sinlat0 = sin(rad(clat));
     double coslat0 = cos(rad(clat));
     double sinlat = sin(rad(lat));
@@ -29,7 +37,7 @@ void inverse_gnomonic_projection(double clon, double clat, double x, double y, d
 }
 
 void azimuthal_equidistant_projection(double clon, double clat, double lon, double lat, double *x, double *y){
-    double dlon = rad(lon - clon);
+    double dlon = dlon_rad(lon, clon);
     double sinlat0 = sin(rad(clat));
     double coslat0 = cos(rad(clat));
     double sinlat = sin(rad(lat));
@@ -55,7 +63,7 @@ void inverse_azimuthal_equidistant_projection(double clon, double clat, double x
 }
 
 void orthographic_projection(double clon, double clat, double lon, double lat, double *x, double *y){
-    double dlon = rad(lon - clon);
+    double dlon = dlon_rad(lon, clon);
     double sinlat0 = sin(rad(clat));
     double coslat0 = cos(rad(clat));
     double sinlat = sin(rad(lat));
@@ -80,10 +88,23 @@ void inverse_orthographic_projection(double clon, double clat, double x, double 
 #ifdef TEST
 int main(){
     double x,y,lon,lat;
+    /* Gnomonic */
     gnomonic_projection(0,90,120,45,&x,&y);
-    printf("gno %f %f\n",x,y);
+    printf("Gnomonic: %f %f\n",x,y);
     inverse_gnomonic_projection(0,90,x,y,&lon,&lat);
-    printf("back %f %f\n",lon,lat);
+    printf("Recovered: %f %f\n",lon,lat);
+
+    /* Azimuthal Equidistant */
+    azimuthal_equidistant_projection(0,90,120,45,&x,&y);
+    printf("Azimuthal Equidistant: %f %f\n",x,y);
+    inverse_azimuthal_equidistant_projection(0,90,x,y,&lon,&lat);
+    printf("Recovered: %f %f\n",lon,lat);
+
+    /* Orthographic */
+    orthographic_projection(0,90,120,45,&x,&y);
+    printf("Orthographic: %f %f\n",x,y);
+    inverse_orthographic_projection(0,90,x,y,&lon,&lat);
+    printf("Recovered: %f %f\n",lon,lat);
     return 0;
 }
 #endif
