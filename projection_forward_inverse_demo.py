@@ -15,7 +15,7 @@ def print_result(name, lon, lat, x, y, lon2, lat2):
     print()
 
 def main():
-    center_lon, center_lat = 0.0, 20.0   # 投影中心 (A, D)
+    center_lon, center_lat = 0.0, 90.0   # 投影中心 (A, D)
 
     # 方式一：输入绝对经纬度
     lon_abs = [10.0, 40.0]
