@@ -14,7 +14,7 @@ contains
     real*8, intent(in) :: clon, clat, lon, lat
     real*8, intent(out) :: x, y
     real*8 dlon, sinlat0, coslat0, sinlat, coslat, denom
-    dlon = rad(lon - clon)
+    dlon = rad(mod(lon - clon + 180.d0, 360.d0) - 180.d0)
     sinlat0 = sin(rad(clat))
     coslat0 = cos(rad(clat))
     sinlat = sin(rad(lat))
@@ -42,7 +42,7 @@ contains
     real*8, intent(in) :: clon, clat, lon, lat
     real*8, intent(out) :: x, y
     real*8 dlon, sinlat0, coslat0, sinlat, coslat, cosc, c, k
-    dlon = rad(lon - clon)
+    dlon = rad(mod(lon - clon + 180.d0, 360.d0) - 180.d0)
     sinlat0 = sin(rad(clat))
     coslat0 = cos(rad(clat))
     sinlat = sin(rad(lat))
@@ -79,7 +79,7 @@ contains
     real*8, intent(in) :: clon, clat, lon, lat
     real*8, intent(out) :: x, y
     real*8 dlon, sinlat0, coslat0, sinlat, coslat
-    dlon = rad(lon - clon)
+    dlon = rad(mod(lon - clon + 180.d0, 360.d0) - 180.d0)
     sinlat0 = sin(rad(clat))
     coslat0 = cos(rad(clat))
     sinlat = sin(rad(lat))
@@ -112,9 +112,23 @@ end module projections
 program test
   use projections
   real*8 x,y,lon,lat
+
+  ! Gnomonic
   call gnomonic_projection(0.d0,90.d0,120.d0,45.d0,x,y)
-  print *, 'gno', x, y
+  print *, 'Gnomonic:', x, y
   call inverse_gnomonic_projection(0.d0,90.d0,x,y,lon,lat)
-  print *, 'back', lon, lat
+  print *, 'Recovered:', lon, lat
+
+  ! Azimuthal Equidistant
+  call azimuthal_equidistant_projection(0.d0,90.d0,120.d0,45.d0,x,y)
+  print *, 'Azimuthal Equidistant:', x, y
+  call inverse_azimuthal_equidistant_projection(0.d0,90.d0,x,y,lon,lat)
+  print *, 'Recovered:', lon, lat
+
+  ! Orthographic
+  call orthographic_projection(0.d0,90.d0,120.d0,45.d0,x,y)
+  print *, 'Orthographic:', x, y
+  call inverse_orthographic_projection(0.d0,90.d0,x,y,lon,lat)
+  print *, 'Recovered:', lon, lat
 end program test
 #endif

@@ -4,11 +4,19 @@
 static double rad(double d){ return d * M_PI / 180.0; }
 static double deg(double r){ return r * 180.0 / M_PI; }
 
+// Difference of longitudes in radians normalized to [-pi, pi]
+static double dlon_rad(double lon, double clon){
+    double d = fmod(lon - clon + 180.0, 360.0);
+    if(d < 0) d += 360.0;
+    d -= 180.0;
+    return rad(d);
+}
+
 struct Point { double x, y; };
 struct Spherical { double lon, lat; };
 
 Point gnomonic_projection(double clon, double clat, double lon, double lat){
-    double dlon = rad(lon - clon);
+    double dlon = dlon_rad(lon, clon);
     double sinlat0 = sin(rad(clat));
     double coslat0 = cos(rad(clat));
     double sinlat = sin(rad(lat));
@@ -34,7 +42,7 @@ Spherical inverse_gnomonic_projection(double clon, double clat, double x, double
 }
 
 Point azimuthal_equidistant_projection(double clon, double clat, double lon, double lat){
-    double dlon = rad(lon - clon);
+    double dlon = dlon_rad(lon, clon);
     double sinlat0 = sin(rad(clat));
     double coslat0 = cos(rad(clat));
     double sinlat = sin(rad(lat));
@@ -60,7 +68,7 @@ Spherical inverse_azimuthal_equidistant_projection(double clon, double clat, dou
 }
 
 Point orthographic_projection(double clon, double clat, double lon, double lat){
-    double dlon = rad(lon - clon);
+    double dlon = dlon_rad(lon, clon);
     double sinlat0 = sin(rad(clat));
     double coslat0 = cos(rad(clat));
     double sinlat = sin(rad(lat));
@@ -81,9 +89,21 @@ Spherical inverse_orthographic_projection(double clon, double clat, double x, do
 
 #ifdef TEST
 int main(){
-    Point p = gnomonic_projection(0,90,120,45);
-    std::cout << "gno "<<p.x<<" "<<p.y<<"\n";
-    Spherical s = inverse_gnomonic_projection(0,90,p.x,p.y);
-    std::cout << "back "<<s.lon<<" "<<s.lat<<"\n";
+    Point p; Spherical s;
+
+    p = gnomonic_projection(0,90,120,45);
+    std::cout << "Gnomonic: "<<p.x<<" "<<p.y<<"\n";
+    s = inverse_gnomonic_projection(0,90,p.x,p.y);
+    std::cout << "Recovered: "<<s.lon<<" "<<s.lat<<"\n";
+
+    p = azimuthal_equidistant_projection(0,90,120,45);
+    std::cout << "Azimuthal Equidistant: "<<p.x<<" "<<p.y<<"\n";
+    s = inverse_azimuthal_equidistant_projection(0,90,p.x,p.y);
+    std::cout << "Recovered: "<<s.lon<<" "<<s.lat<<"\n";
+
+    p = orthographic_projection(0,90,120,45);
+    std::cout << "Orthographic: "<<p.x<<" "<<p.y<<"\n";
+    s = inverse_orthographic_projection(0,90,p.x,p.y);
+    std::cout << "Recovered: "<<s.lon<<" "<<s.lat<<"\n";
 }
 #endif
