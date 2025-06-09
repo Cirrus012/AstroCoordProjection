@@ -1,5 +1,9 @@
 import numpy as np
-
+'''
+Astron. Nachr. 312 (1991) 2, 113-120
+The calculation of standard coordinates in Schmidt plate astrometry
+W.R. DICK, Potsdam-Babelsberg
+'''
 # ---------------------------------------------------
 # Gnomonic projection (eq.6–9)
 # ---------------------------------------------------
