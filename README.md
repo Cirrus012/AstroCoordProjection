@@ -28,7 +28,3 @@ xi, eta = gnomonic_projection(center_lon, center_lat, lon, lat)
 
 See `show_usage.py` for a complete demonstration that also
 exercises the inverse transforms.
-
-### C/C++/Fortran
-
-Simple implementations of the same algorithms are provided in `c/`, `cpp/` and `fortran/` directories for reference.
