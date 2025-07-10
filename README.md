@@ -1,6 +1,8 @@
 # AstroCoordProjection
 
-This repository demonstrates several azimuthal map projections used in astronomy.  Implementations are provided in Python with reference code in C, C++ and Fortran.
+This repository demonstrates several azimuthal map projections used in astronomy.
+The calculation is based on this paper:
+*The calculation of standard coordinates in Schmidt plate astrometry  W.R. DICK, Potsdam-Babelsberg*
 
 ## Implemented projections / 已实现投影
 
@@ -28,3 +30,8 @@ xi, eta = gnomonic_projection(center_lon, center_lat, lon, lat)
 
 See `show_usage.py` for a complete demonstration that also
 exercises the inverse transforms.
+
+# TODO
+
+Implementations provided in Python with reference code in C, C++ and Fortran.
+
